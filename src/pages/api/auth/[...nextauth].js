@@ -6,6 +6,7 @@ export default NextAuth({
   secret: "SUPERMEGASECRETO",
   providers: [
     CredentialsProvider({
+      id: "username-login",
       // The name to display on the sign in form (e.g. "Sign in with...")
       name: "Credentials",
       // `credentials` is used to generate a form on the sign in page.
@@ -18,7 +19,7 @@ export default NextAuth({
       },
       async authorize(credentials, req) {
         // Add logic here to look up the user from the credentials supplied
-        const res = await fetch("http://localhost:8000/auth/token", {
+        const res = await fetch("http://127.0.0.1:8000/auth/token", {
           method: "POST",
           headers: {
             "Content-Type": "application/x-www-form-urlencoded"

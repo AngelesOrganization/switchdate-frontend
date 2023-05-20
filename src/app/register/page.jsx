@@ -44,7 +44,7 @@ export default function Register() {
     setRequestData(createUser);
   };
 
-  const { data, error } = useSWR(requestData && ['http://localhost:8000/users', requestData], fetcher);
+  const { data, error } = useSWR(requestData && ['http://127.0.0.1:8000/users', requestData], fetcher);
 
   useEffect(() => {
     if(requestData != null){

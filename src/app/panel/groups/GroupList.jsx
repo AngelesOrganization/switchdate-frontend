@@ -7,10 +7,13 @@ import ListItemButton from '@mui/material/ListItemButton';
 import ListItemAvatar from '@mui/material/ListItemAvatar';
 import ListItemText from '@mui/material/ListItemText';
 import Avatar from '@mui/material/Avatar';
+import Fab from '@mui/material/Fab';
+import AddIcon from '@mui/icons-material/Add';
+import Link from 'next/link';
 
 export default function GroupList(props) {
   return (
-    <Box sx={{ pb: 7 }}>
+    <Box sx={{ pb: 7 , mt: 6}}>
       <List>
         {
           props.groups.map((group, index) => (
@@ -23,6 +26,20 @@ export default function GroupList(props) {
           ))
         }
       </List>
+      <Link href="/panel/groups/create">
+        <Fab
+          color="primary"
+          aria-label="add"
+          sx={{
+            position: 'absolute',
+            right: '15px',
+            bottom: '76px',
+          }}
+        >
+          <AddIcon />
+        </Fab>
+      </Link>
+
     </Box>
   );
 }

@@ -25,7 +25,7 @@ export default function ProtectedPage() {
   const loading = status === 'loading';
 
   const { data: groups, error } = useSWR(
-    session ? [`http://localhost:8000/groups`, session.accessToken] : null, 
+    session ? [`http://127.0.0.1:8000/groups`, session.accessToken] : null, 
     fetcher
   )
 
