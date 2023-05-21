@@ -1,84 +1,132 @@
-'use client'
+"use client"
 
-import dayjs from 'dayjs';
-import Badge from '@mui/material/Badge';
-import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
-import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
-import { PickersDay, PickersDayProps } from '@mui/x-date-pickers/PickersDay';
-import { DateCalendar } from '@mui/x-date-pickers/DateCalendar';
-import { DayCalendarSkeleton } from '@mui/x-date-pickers/DayCalendarSkeleton';
-import { useEffect } from 'react';
+import dayjs from "dayjs"
+import Badge from "@mui/material/Badge"
+import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs"
+import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider"
+import { PickersDay } from "@mui/x-date-pickers/PickersDay"
+import { DateCalendar } from "@mui/x-date-pickers/DateCalendar"
+import { DayCalendarSkeleton } from "@mui/x-date-pickers/DayCalendarSkeleton"
+import { useEffect, useRef, useState } from "react"
+import useSWR from 'swr';
+import { Container, Button } from '@mui/material';
 
-const API_ENDPOINT = 'https://ejemplo-api.com/dias-trabajados'; // Reemplaza con la URL correcta de la API
 
-const MonthCalendar = () => {
-  const [loading, setLoading] = React.useState(true);
-  const [workDays, setWorkDays] = React.useState([]);
-  const [selectedDays, setSelectedDays] = React.useState([]);
+/**
+ * Mimic fetch with abort controller https://developer.mozilla.org/en-US/docs/Web/API/AbortController/abort
+ * ⚠️ No IE11 support
+ */
+async function fetcher(url, accessToken) {
+  const response = await fetch(url[0], {
+    headers: {
+      'Authorization': `Bearer ${url[1]}`,
+    },
+  });
 
-  useEffect(() => {
-    const fetchWorkDays = async () => {
-      try {
-        const currentDate = dayjs();
-        const year = currentDate.year();
-        const month = currentDate.month() + 1;
-        const response = await fetch(`${API_ENDPOINT}?year=${year}&month=${month}`);
-        const data = await response.json();
-        setWorkDays(data.workDays);
-        setLoading(false);
-      } catch (error) {
-        console.error('Error al obtener los días trabajados:', error);
-      }
-    };
-
-    fetchWorkDays();
-  }, []);
-
-  const handleDayClick = (day: Dayjs) => {
-    setSelectedDays((prevSelectedDays) => {
-      if (prevSelectedDays.includes(day)) {
-        return prevSelectedDays.filter((selectedDay) => !selectedDay.isSame(day, 'day'));
-      }
-      return [...prevSelectedDays, day];
-    });
-  };
-
-  const handleButtonClick = () => {
-    // Aquí puedes realizar la lógica para enviar los días seleccionados al backend
-    console.log('Días seleccionados:', selectedDays);
-  };
-
-  if (loading) {
-    return <DayCalendarSkeleton />;
+  if (!response.ok) {
+    throw new Error('Error al cargar los datos');
   }
 
-  const renderDay = (day, _selectedDates, pickersDayProps) => {
-    const isWorkDay = workDays.some((workDay) => day.isSame(workDay, 'day'));
-    const isSelected = selectedDays.some((selectedDay) => day.isSame(selectedDay, 'day'));
-
-    return (
-      <Badge badgeContent="W" color={isWorkDay ? 'primary' : 'default'} overlap="circular">
-        <PickersDay
-          {...pickersDayProps}
-          disableMargin
-          onClick={() => handleDayClick(day)}
-          selected={isSelected}
-        />
-      </Badge>
-    );
-  };
-
-  return (
-    <LocalizationProvider dateAdapter={AdapterDayjs}>
-      <DateCalendar
-        renderDay={renderDay}
-        date={dayjs()}
-        onMonthChange={() => {}}
-        components={{ Day }}
-      />
-      <button onClick={handleButtonClick}>Enviar días seleccionados</button>
-    </LocalizationProvider>
-  );
+  return response.json();
 };
 
-export default MonthCalendar;
+const initialValue = dayjs("2022-04-17")
+
+function ServerDay(props) {
+  const { highlightedDays, day, ...other } = props;
+  
+  let isHighlighted = false;
+
+  if(highlightedDays) {
+    let s = dayjs(day).date();
+    isHighlighted = highlightedDays.includes(s);
+  }
+  
+  if(isHighlighted) {
+    let s = dayjs(day).date();
+    console.log(
+      "ServerDay - s: " + JSON.stringify(s) +
+      ", highlightedDays: " + JSON.stringify(highlightedDays) +
+      ", day: " + JSON.stringify(day) +
+      ", isHighlighted: " + JSON.stringify(isHighlighted)
+    );
+    
+  }
+
+  return (
+    <Badge
+      key={day.toString()}
+      overlap="circular"
+      badgeContent={(isHighlighted) ? '🌚' : undefined}
+    >
+      <PickersDay
+        {...other}
+        day={day}
+      />
+    </Badge>
+  );
+}
+
+
+export default function DateCalendarServerRequest(props) {
+  const [selectedDateState, setSelectedDateState] = useState(dayjs("2023-05-17")) 
+  const requestAbortController = useRef(null)
+  const [isLoadingState, setIsLoadingState] = useState(false)
+  const [highlightedDaysState, setHighlightedDaysState] = useState([])
+
+  const { data, error } = useSWR(['http://127.0.0.1:8000/shifts?month=5&year=2023', props.token], fetcher);
+
+  // Cuando se obtenga la respuesta de la API, asignar los datos al estado
+  if (data && highlightedDaysState.length == 0) {
+    let x = data.map((shift) => { 
+      console.log("shift: " + JSON.stringify(shift));
+      return dayjs(shift.start_time).date();
+    });
+    console.log("x: " + JSON.stringify(x));
+    setHighlightedDaysState(x);
+  }
+
+  const handleMonthChange = date => {
+    setIsLoadingState(false)
+    setHighlightedDaysState([])
+  }
+
+
+  function handleSelectedDate(date) {
+    setSelectedDateState(date);
+  }
+
+  useEffect(() => {
+    console.log("highlightedDaysState: " + JSON.stringify(highlightedDaysState))
+  })
+
+  return (
+    <Container>
+      <LocalizationProvider dateAdapter={AdapterDayjs}>
+        <DateCalendar
+          value={selectedDateState}
+          onChange={handleSelectedDate}
+          loading={isLoadingState}
+          onMonthChange={handleMonthChange}
+          renderLoading={() => <DayCalendarSkeleton />}
+          slots={{
+            day: ServerDay
+          }}
+          slotProps={{
+            day: {
+              highlightedDays: highlightedDaysState
+            }
+          }}
+        />
+      </LocalizationProvider>
+      <Button
+      variant="contained"
+      color="primary"
+      sx={{ marginY: '16px' }}
+      fullWidth
+      >
+        Registrarse
+      </Button>
+    </Container>
+  )
+}
