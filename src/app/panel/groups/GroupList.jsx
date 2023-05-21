@@ -17,7 +17,7 @@ export default function GroupList(props) {
       <List>
         {
           props.groups.map((group, index) => (
-            <ListItemButton>
+            <ListItemButton key={group.id} href={`/panel/groups/${group.id}`}>
               <ListItemAvatar>
                 <Avatar alt="Profile Picture" src={group.name} />
               </ListItemAvatar>
