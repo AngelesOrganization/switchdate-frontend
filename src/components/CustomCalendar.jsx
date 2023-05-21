@@ -33,16 +33,20 @@ async function fetcher(url, accessToken) {
 const initialValue = dayjs("2022-04-17")
 
 function ServerDay(props) {
-  const { highlightedDays, day, ...other } = props;
+  const { highlightedDays, calendarMonth, day, ...other } = props;
   
   let isHighlighted = false;
 
-  if(highlightedDays) {
-    let s = dayjs(day).date();
-    isHighlighted = highlightedDays.includes(s);
+  if (highlightedDays) {
+    const selectedMonth = new Date(day).getMonth();
+
+    if (calendarMonth === selectedMonth) {
+      let s = dayjs(day).date();
+      isHighlighted = highlightedDays.includes(s);
+    }
   }
   
-  if(isHighlighted) {
+  if (isHighlighted) {
     let s = dayjs(day).date();
     console.log(
       "ServerDay - s: " + JSON.stringify(s) +
@@ -50,14 +54,13 @@ function ServerDay(props) {
       ", day: " + JSON.stringify(day) +
       ", isHighlighted: " + JSON.stringify(isHighlighted)
     );
-    
   }
 
   return (
     <Badge
       key={day.toString()}
       overlap="circular"
-      badgeContent={(isHighlighted) ? '🌚' : undefined}
+      badgeContent={isHighlighted ? '🌚' : undefined}
     >
       <PickersDay
         {...other}
@@ -70,6 +73,7 @@ function ServerDay(props) {
 
 export default function DateCalendarServerRequest(props) {
   const [selectedDateState, setSelectedDateState] = useState(dayjs("2023-05-17")) 
+  const [calendarMonthState, setCalendarMonthState] = useState(new Date().getMonth())
   const requestAbortController = useRef(null)
   const [isLoadingState, setIsLoadingState] = useState(false)
   const [highlightedDaysState, setHighlightedDaysState] = useState([])
@@ -87,8 +91,8 @@ export default function DateCalendarServerRequest(props) {
   }
 
   const handleMonthChange = date => {
-    setIsLoadingState(false)
-    setHighlightedDaysState([])
+    setCalendarMonthState(new Date(date).getMonth());
+    setHighlightedDaysState([]);
   }
 
 
@@ -114,7 +118,8 @@ export default function DateCalendarServerRequest(props) {
           }}
           slotProps={{
             day: {
-              highlightedDays: highlightedDaysState
+              highlightedDays: highlightedDaysState,
+              calendarMonth: calendarMonthState
             }
           }}
         />
