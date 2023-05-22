@@ -8,7 +8,7 @@ import { PickersDay } from "@mui/x-date-pickers/PickersDay"
 import { DateCalendar } from "@mui/x-date-pickers/DateCalendar"
 import { DayCalendarSkeleton } from "@mui/x-date-pickers/DayCalendarSkeleton"
 import { useEffect, useRef, useState } from "react"
-import useSWR from 'swr';
+import useSWR, { mutate } from 'swr';
 import { Container, Button } from '@mui/material';
 
 
@@ -17,6 +17,7 @@ import { Container, Button } from '@mui/material';
  * ⚠️ No IE11 support
  */
 async function fetcher(url, accessToken) {
+  console.log("fetcher");
   const response = await fetch(url[0], {
     headers: {
       'Authorization': `Bearer ${url[1]}`,
@@ -48,12 +49,12 @@ function ServerDay(props) {
   
   if (isHighlighted) {
     let s = dayjs(day).date();
-    console.log(
-      "ServerDay - s: " + JSON.stringify(s) +
-      ", highlightedDays: " + JSON.stringify(highlightedDays) +
-      ", day: " + JSON.stringify(day) +
-      ", isHighlighted: " + JSON.stringify(isHighlighted)
-    );
+    // console.log(
+    //   "ServerDay - s: " + JSON.stringify(s) +
+    //   ", highlightedDays: " + JSON.stringify(highlightedDays) +
+    //   ", day: " + JSON.stringify(day) +
+    //   ", isHighlighted: " + JSON.stringify(isHighlighted)
+    // );
   }
 
   return (
@@ -72,37 +73,45 @@ function ServerDay(props) {
 
 
 export default function DateCalendarServerRequest(props) {
-  const [selectedDateState, setSelectedDateState] = useState(dayjs("2023-05-17")) 
+  const [selectedDateState, setSelectedDateState] = useState(null) 
   const [calendarMonthState, setCalendarMonthState] = useState(new Date().getMonth())
-  const requestAbortController = useRef(null)
+  const [calendarYearState, setCalendarYearState] = useState(new Date().getFullYear())
   const [isLoadingState, setIsLoadingState] = useState(false)
   const [highlightedDaysState, setHighlightedDaysState] = useState([])
 
-  const { data, error } = useSWR(['http://127.0.0.1:8000/shifts?month=5&year=2023', props.token], fetcher);
+  let { data, error } = useSWR([`http://127.0.0.1:8000/shifts?month=${calendarMonthState + 1 }&year=${calendarYearState}`, props.token], fetcher);
+  
 
-  // Cuando se obtenga la respuesta de la API, asignar los datos al estado
-  if (data && highlightedDaysState.length == 0) {
-    let x = data.map((shift) => { 
-      console.log("shift: " + JSON.stringify(shift));
-      return dayjs(shift.start_time).date();
-    });
-    console.log("x: " + JSON.stringify(x));
-    setHighlightedDaysState(x);
-  }
+  useEffect(() => {
+    console.log("MAE - highlightedDaysState: " + JSON.stringify(highlightedDaysState));
+    console.log("MAE - data: " + JSON.stringify(data));
+    if (data) {
+      let x = data.map((shift) => { 
+        console.log("shift: " + JSON.stringify(shift));
+        return dayjs(shift.start_time).date();
+      });
+      console.log("x: " + JSON.stringify(x));
+      setHighlightedDaysState(x);
+      data = null;
+    }
+  }, [data])
 
-  const handleMonthChange = date => {
+  function handleMonthChange(date) {    
     setCalendarMonthState(new Date(date).getMonth());
+    setCalendarYearState(new Date(date).getFullYear());
+    
     setHighlightedDaysState([]);
   }
 
 
   function handleSelectedDate(date) {
     setSelectedDateState(date);
+    console.log(JSON.stringify(date));
   }
 
-  useEffect(() => {
-    console.log("highlightedDaysState: " + JSON.stringify(highlightedDaysState))
-  })
+  function clickIntercambio() {
+      console.log(JSON.stringify(selectedDateState));
+  }
 
   return (
     <Container>
@@ -127,6 +136,7 @@ export default function DateCalendarServerRequest(props) {
       <Button
       variant="contained"
       color="primary"
+      onClick={clickIntercambio}
       sx={{ marginY: '16px' }}
       fullWidth
       >
