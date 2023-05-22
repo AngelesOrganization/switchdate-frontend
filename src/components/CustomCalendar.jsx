@@ -12,12 +12,7 @@ import useSWR, { mutate } from 'swr';
 import { Container, Button } from '@mui/material';
 
 
-/**
- * Mimic fetch with abort controller https://developer.mozilla.org/en-US/docs/Web/API/AbortController/abort
- * ⚠️ No IE11 support
- */
-async function fetcher(url, accessToken) {
-  console.log("fetcher");
+async function fetcher(url) {
   const response = await fetch(url[0], {
     headers: {
       'Authorization': `Bearer ${url[1]}`,
@@ -35,28 +30,21 @@ const initialValue = dayjs("2022-04-17")
 
 function ServerDay(props) {
   const { highlightedDays, calendarMonth, day, ...other } = props;
-  
+
+  const days = highlightedDays.map((shift) => { 
+    return dayjs(shift.start_time).date();
+  });
+
   let isHighlighted = false;
 
-  if (highlightedDays) {
+  if (days) {
     const selectedMonth = new Date(day).getMonth();
 
     if (calendarMonth === selectedMonth) {
-      let s = dayjs(day).date();
-      isHighlighted = highlightedDays.includes(s);
+      isHighlighted = days.includes(dayjs(day).date());
     }
   }
   
-  if (isHighlighted) {
-    let s = dayjs(day).date();
-    // console.log(
-    //   "ServerDay - s: " + JSON.stringify(s) +
-    //   ", highlightedDays: " + JSON.stringify(highlightedDays) +
-    //   ", day: " + JSON.stringify(day) +
-    //   ", isHighlighted: " + JSON.stringify(isHighlighted)
-    // );
-  }
-
   return (
     <Badge
       key={day.toString()}
@@ -76,37 +64,32 @@ export default function DateCalendarServerRequest(props) {
   const [selectedDateState, setSelectedDateState] = useState(null) 
   const [calendarMonthState, setCalendarMonthState] = useState(new Date().getMonth())
   const [calendarYearState, setCalendarYearState] = useState(new Date().getFullYear())
-  const [isLoadingState, setIsLoadingState] = useState(false)
   const [highlightedDaysState, setHighlightedDaysState] = useState([])
+  const [isLoadingState, setIsLoadingState] = useState(false)
+
 
   let { data, error } = useSWR([`http://127.0.0.1:8000/shifts?month=${calendarMonthState + 1 }&year=${calendarYearState}`, props.token], fetcher);
   
 
   useEffect(() => {
-    console.log("MAE - highlightedDaysState: " + JSON.stringify(highlightedDaysState));
-    console.log("MAE - data: " + JSON.stringify(data));
     if (data) {
-      let x = data.map((shift) => { 
-        console.log("shift: " + JSON.stringify(shift));
-        return dayjs(shift.start_time).date();
-      });
-      console.log("x: " + JSON.stringify(x));
-      setHighlightedDaysState(x);
-      data = null;
+      setHighlightedDaysState(data);
     }
   }, [data])
 
   function handleMonthChange(date) {    
     setCalendarMonthState(new Date(date).getMonth());
     setCalendarYearState(new Date(date).getFullYear());
-    
-    setHighlightedDaysState([]);
+  }
+
+  function handleYearChange(date) {
+    setCalendarMonthState(new Date(date).getMonth());
+    setCalendarYearState(new Date(date).getFullYear());
   }
 
 
   function handleSelectedDate(date) {
     setSelectedDateState(date);
-    console.log(JSON.stringify(date));
   }
 
   function clickIntercambio() {
@@ -121,6 +104,7 @@ export default function DateCalendarServerRequest(props) {
           onChange={handleSelectedDate}
           loading={isLoadingState}
           onMonthChange={handleMonthChange}
+          onYearChange={handleYearChange}
           renderLoading={() => <DayCalendarSkeleton />}
           slots={{
             day: ServerDay
