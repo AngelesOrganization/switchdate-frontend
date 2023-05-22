@@ -26,46 +26,46 @@ async function fetcher(url) {
   return response.json();
 };
 
-const initialValue = dayjs("2022-04-17")
+export default function DateCalendarServerRequest(props) {
+  const [selectedDateState, setSelectedDateState] = useState(null);
+  const [calendarMonthState, setCalendarMonthState] = useState(new Date().getMonth());
+  const [calendarYearState, setCalendarYearState] = useState(new Date().getFullYear());
+  const [highlightedDaysState, setHighlightedDaysState] = useState([]);
+  const [uuidSelectedShiftState, setUuidSelectedShiftState] = useState([]);
+  const [isLoadingState, setIsLoadingState] = useState(false);
 
-function ServerDay(props) {
-  const { highlightedDays, calendarMonth, day, ...other } = props;
-
-  const days = highlightedDays.map((shift) => { 
-    return dayjs(shift.start_time).date();
-  });
-
-  let isHighlighted = false;
-
-  if (days) {
-    const selectedMonth = new Date(day).getMonth();
-
-    if (calendarMonth === selectedMonth) {
-      isHighlighted = days.includes(dayjs(day).date());
-    }
+  function ServerDay(props) {
+    const { highlightedDays, calendarMonth, day, ...other } = props;
+  
+    const currentRenderingDay = new Date(day).getDate();
+    const currentRenderingMonth = new Date(day).getMonth();
+    const currentRenderingYear = new Date(day).getFullYear();
+  
+    const matchingShift = highlightedDays.find((shift) => {
+      const shiftDay = new Date(shift.start_time).getDate();
+      const shiftMonth = new Date(shift.start_time).getMonth();
+      const shiftYear = new Date(shift.start_time).getFullYear();
+  
+      return shiftDay === currentRenderingDay && shiftMonth === currentRenderingMonth && shiftYear === currentRenderingYear;
+    });
+  
+    let isHighlighted = matchingShift !== undefined;
+  
+    return (
+      <Badge
+        key={day.toString()}
+        onClick={() => {
+          console.log(matchingShift);
+        }}
+        overlap="circular"
+        badgeContent={isHighlighted ? '🌚' : undefined}
+      >
+        <PickersDay {...other} day={day} />
+      </Badge>
+    );
   }
   
-  return (
-    <Badge
-      key={day.toString()}
-      overlap="circular"
-      badgeContent={isHighlighted ? '🌚' : undefined}
-    >
-      <PickersDay
-        {...other}
-        day={day}
-      />
-    </Badge>
-  );
-}
-
-
-export default function DateCalendarServerRequest(props) {
-  const [selectedDateState, setSelectedDateState] = useState(null) 
-  const [calendarMonthState, setCalendarMonthState] = useState(new Date().getMonth())
-  const [calendarYearState, setCalendarYearState] = useState(new Date().getFullYear())
-  const [highlightedDaysState, setHighlightedDaysState] = useState([])
-  const [isLoadingState, setIsLoadingState] = useState(false)
+  
 
 
   let { data, error } = useSWR([`http://127.0.0.1:8000/shifts?month=${calendarMonthState + 1 }&year=${calendarYearState}`, props.token], fetcher);
