@@ -87,14 +87,55 @@ export default function DateCalendarServerRequest(props) {
   }
 
   function handleSelectedDate(date) {
+    console.log(date);
+    console.log(date.toDate());
     setSelectedDateState(date);
   }
 
-  function clickIntercambio() {
-    console.log(JSON.stringify(selectedDateState));
+  async function handleCreateShift() {
+
+    if(!selectedDateState) return;
+
+    const url = "http://127.0.0.1:8000/shifts";
+
+    const dateObject = new Date(selectedDateState.valueOf() + selectedDateState.utcOffset() * 60 * 1000);
+
+    const data = {
+      start_time: dateObject,
+      end_time: dateObject
+    };
+
+    try {
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${props.token}`
+        },
+        body: JSON.stringify(data)
+      });
+
+      if (!response.ok) {
+        throw new Error('Error:', response.status);
+      }
+
+      const responseData = await response.json();
+      console.log('Success:', responseData);
+      // Handle the response data here
+
+    } catch (error) {
+      console.error('Error:', error);
+      // Handle errors here
+    }
+    mutate();
+    setSelectedDateState(null);
   }
 
+
   async function handleDeleteShift() {
+    console.log(selectedShiftState);
+    if(selectedShiftState === undefined ||selectedShiftState === null) return;
+
     const deleteUrl = `http://127.0.0.1:8000/shifts/${selectedShiftState.id}`;
     const requestOptions = {
       method: 'DELETE',
@@ -106,6 +147,7 @@ export default function DateCalendarServerRequest(props) {
     const response = await fetch(deleteUrl, requestOptions);
 
     mutate();
+    setSelectedDateState(null);
   }
 
   return (
@@ -136,6 +178,15 @@ export default function DateCalendarServerRequest(props) {
         fullWidth
       >
         Borrar Turno
+      </Button>
+      <Button
+        variant="contained"
+        color="primary"
+        onClick={handleCreateShift}
+        sx={{ marginY: '16px' }}
+        fullWidth
+      >
+        Añadir Turno
       </Button>
     </Container>
   )
