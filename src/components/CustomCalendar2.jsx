@@ -9,15 +9,13 @@ import { DateCalendar } from "@mui/x-date-pickers/DateCalendar";
 import { DayCalendarSkeleton } from "@mui/x-date-pickers/DayCalendarSkeleton";
 import { useEffect, useState } from "react";
 import useSWR from 'swr';
-import { Container, Button } from '@mui/material';
+import { Container } from '@mui/material';
 import { apiShifts } from "@/requests/requests";
 
-export default function DateCalendarServerRequest2(props) {
-  const [selectedDateState, setSelectedDateState] = useState(null);
+export default function CustomCalendar({ userId, token, selectedDateState, setSelectedDateState, setSelectedShiftState, triggerMutate }) {
   const [calendarMonthState, setCalendarMonthState] = useState(new Date().getMonth());
   const [calendarYearState, setCalendarYearState] = useState(new Date().getFullYear());
   const [highlightedDaysState, setHighlightedDaysState] = useState([]);
-  const [selectedShiftState, setSelectedShiftState] = useState(null);
 
   function ServerDay(propss) {
     const { highlightedDays, calendarMonth, day, ...other } = propss;
@@ -41,7 +39,6 @@ export default function DateCalendarServerRequest2(props) {
         key={day.toString()}
         onClick={() => {
           setSelectedShiftState(matchingShift);
-          props.setDate(matchingShift);
         }}
         overlap="circular"
         badgeContent={isHighlighted ? '🌚' : undefined}
@@ -51,7 +48,7 @@ export default function DateCalendarServerRequest2(props) {
     );
   }
 
-  let { data, mutate, error } = useSWR({ url: `${apiShifts}/${props.userId}?month=${calendarMonthState + 1}&year=${calendarYearState}`, accessToken: props.token, }, fetcher);
+  let { data, mutate } = useSWR({ url: `${apiShifts}/${userId}?month=${calendarMonthState + 1}&year=${calendarYearState}`, accessToken: token }, fetcher);
 
   useEffect(() => {
     if (data) {
@@ -59,22 +56,21 @@ export default function DateCalendarServerRequest2(props) {
     }
   }, [data])
 
-  function handleMonthChange(date) {
-    setCalendarMonthState(new Date(date).getMonth());
-    setCalendarYearState(new Date(date).getFullYear());
-  }
+  useEffect(() => {
+    if (triggerMutate) {
+      mutate();
+    }
+  }, [triggerMutate])
 
-  function handleYearChange(date) {
-    setCalendarMonthState(new Date(date).getMonth());
-    setCalendarYearState(new Date(date).getFullYear());
+  function handleCalendarChange(date) {
+    const dt = new Date(date);
+    setCalendarMonthState(dt.getMonth());
+    setCalendarYearState(dt.getFullYear());
   }
 
   function handleSelectedDate(date) {
-    console.log(date);
-    console.log(date.toDate());
     setSelectedDateState(date);
   }
-
 
   return (
     <Container>
@@ -82,8 +78,8 @@ export default function DateCalendarServerRequest2(props) {
         <DateCalendar
           value={selectedDateState}
           onChange={handleSelectedDate}
-          onMonthChange={handleMonthChange}
-          onYearChange={handleYearChange}
+          onMonthChange={handleCalendarChange}
+          onYearChange={handleCalendarChange}
           renderLoading={() => <DayCalendarSkeleton />}
           slots={{
             day: ServerDay
