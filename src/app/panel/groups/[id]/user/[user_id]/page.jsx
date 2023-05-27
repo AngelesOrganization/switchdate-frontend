@@ -26,8 +26,8 @@ export default function ProtectedPage({params}) {
   }
 
   async function handleSwapRequest() {
-    console.log("requesterSelectedDate: " + JSON.stringify(requesterSelectedDate));
-    console.log("requestedSelectedDate: " + JSON.stringify(requestedSelectedDate));
+    console.log("requesterSelectedDate: " + JSON.stringify(requesterSelectedDate,null, 4));
+    console.log("requestedSelectedDate: " + JSON.stringify(requestedSelectedDate,null, 4));
   }
 
   function wrapper(shift) {
@@ -36,7 +36,7 @@ export default function ProtectedPage({params}) {
 
   return (
     <div>
-      <DateCalendarServerRequest2 token={session.accessToken} userId={params.userId} setDate={setRequestedSelectedDate}/>
+      <DateCalendarServerRequest2 token={session.accessToken} userId={params.user_id} setDate={setRequestedSelectedDate}/>
       <Button
         variant="contained"
         onClick={handleSwapRequest}

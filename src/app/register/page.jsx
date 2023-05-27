@@ -1,57 +1,34 @@
 "use client"
 
-import { useState, useEffect } from 'react';
 import { Button, Container, TextField } from '@mui/material';
 import { AccountCircle, Email, Lock, Abc } from '@mui/icons-material';
 import { useRouter } from 'next/navigation';
-import useSWR from 'swr';
 import Image from 'next/image';
 
-async function fetcher(url) {
-  console.log("url " + url[0]);
-  console.log("body " + url[1]);
-
-  const response = await fetch(url[0], {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(url[1]),
-  });
-
-  if (!response.ok) {
-    throw new Error('Error al cargar los datos');
-  }
-
-  return response.json();
-};
+import { apiUsers, fetcher } from "@/requests/requests";
 
 export default function Register() {
   const router = useRouter();
-  const [requestData, setRequestData] = useState(null);
 
-  const handleSubmit = (event) => {
+  async function handleSubmit(event) {
     event.preventDefault();
-    const createUser = {
-      'username': event.target.username.value,
-      'email': event.target.email.value,
-      'first_name': event.target.firstName.value,
-      'last_name': event.target.secondName.value,
-      'password': event.target.password.value,
-      'role': 'string'
-    }
 
-    setRequestData(createUser);
+    await fetcher(
+      {
+        url: apiUsers,
+        data: {
+          username: event.target.username.value,
+          email: event.target.email.value,
+          first_name: event.target.firstName.value,
+          last_name: event.target.secondName.value,
+          password: event.target.password.value,
+          role: 'string'
+        },
+        method: 'POST'
+      }
+    );
+    router.push("/login");
   };
-
-  const { data, error } = useSWR(requestData && ['http://127.0.0.1:8000/users', requestData], fetcher);
-
-  useEffect(() => {
-    if(requestData != null){
-      setRequestData(null);
-      router.push("/login");
-    }
-  }, [requestData, router]);
 
   return (
     <>
@@ -77,28 +54,28 @@ export default function Register() {
             margin="normal"
             label="Username"
             name="username"
-            InputProps={{ startAdornment: <AccountCircle sx={{mr: 1}}/> }}
+            InputProps={{ startAdornment: <AccountCircle sx={{ mr: 1 }} /> }}
           />
           <TextField
             fullWidth
             margin="normal"
             label="Email"
             name="email"
-            InputProps={{ startAdornment: <Email sx={{mr: 1}}/> }}
+            InputProps={{ startAdornment: <Email sx={{ mr: 1 }} /> }}
           />
           <TextField
             fullWidth
             margin="normal"
             label="First Name"
             name="firstName"
-            InputProps={{ startAdornment: <Abc sx={{mr: 1}}/> }}
+            InputProps={{ startAdornment: <Abc sx={{ mr: 1 }} /> }}
           />
           <TextField
             fullWidth
             margin="normal"
             label="Second Name"
             name="secondName"
-            InputProps={{ startAdornment: <Abc sx={{mr: 1}}/> }}
+            InputProps={{ startAdornment: <Abc sx={{ mr: 1 }} /> }}
           />
           <TextField
             fullWidth
@@ -106,7 +83,7 @@ export default function Register() {
             type="password"
             label="Contraseña"
             name="password"
-            InputProps={{ startAdornment: <Lock sx={{mr: 1}}/> }}
+            InputProps={{ startAdornment: <Lock sx={{ mr: 1 }} /> }}
           />
           <Button
             variant="contained"

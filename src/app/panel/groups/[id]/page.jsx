@@ -3,20 +3,7 @@
 import { useSession } from "next-auth/react";
 import useSWR from 'swr';
 import UserListComponent from "./UserList";
-
-async function fetcher(url, accessToken) {
-  const response = await fetch(url[0], {
-    headers: {
-      'Authorization': `Bearer ${url[1]}`,
-    },
-  });
-
-  if (!response.ok) {
-    throw new Error('Error al cargar los datos');
-  }
-
-  return response.json();
-};
+import { fetcher } from "@/requests/requests";
 
 
 export default function Page({ params }) {
@@ -25,7 +12,7 @@ export default function Page({ params }) {
   const loading = status === 'loading';
 
   const { data: users, error } = useSWR(
-    session && [`http://127.0.0.1:8000/users/${params.id}`, session.accessToken], 
+    session && {url: `http://127.0.0.1:8000/users/${params.id}`, accessToken: session.accessToken}, 
     fetcher
   )
 

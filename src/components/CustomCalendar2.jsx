@@ -1,6 +1,6 @@
 "use client";
 
-import dayjs from "dayjs";
+import { fetcher } from "@/requests/requests";
 import Badge from "@mui/material/Badge";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
@@ -10,25 +10,7 @@ import { DayCalendarSkeleton } from "@mui/x-date-pickers/DayCalendarSkeleton";
 import { useEffect, useState } from "react";
 import useSWR from 'swr';
 import { Container, Button } from '@mui/material';
-
-
-async function fetcher(url) {
-  console.log(url[2]);
-  const requestOptions = {
-    method: url[2],
-    headers: {
-      'Authorization': `Bearer ${url[1]}`,
-    },
-  };
-
-  const response = await fetch(url[0], requestOptions);
-
-  if (!response.ok) {
-    throw new Error('Error al cargar los datos');
-  }
-
-  return response.json();
-};
+import { apiShifts } from "@/requests/requests";
 
 export default function DateCalendarServerRequest2(props) {
   const [selectedDateState, setSelectedDateState] = useState(null);
@@ -69,7 +51,7 @@ export default function DateCalendarServerRequest2(props) {
     );
   }
 
-  let { data, mutate, error } = useSWR([`http://127.0.0.1:8000/shifts/${props.userId}?month=${calendarMonthState + 1}&year=${calendarYearState}`, props.token, 'GET'], fetcher);
+  let { data, mutate, error } = useSWR({ url: `${apiShifts}/${props.userId}?month=${calendarMonthState + 1}&year=${calendarYearState}`, accessToken: props.token, }, fetcher);
 
   useEffect(() => {
     if (data) {

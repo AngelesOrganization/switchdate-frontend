@@ -10,25 +10,8 @@ import { DayCalendarSkeleton } from "@mui/x-date-pickers/DayCalendarSkeleton";
 import { useEffect, useState } from "react";
 import useSWR from 'swr';
 import { Container, Button } from '@mui/material';
-
-
-async function fetcher(url) {
-  console.log(url[2]);
-  const requestOptions = {
-    method: url[2],
-    headers: {
-      'Authorization': `Bearer ${url[1]}`,
-    },
-  };
-
-  const response = await fetch(url[0], requestOptions);
-
-  if (!response.ok) {
-    throw new Error('Error al cargar los datos');
-  }
-
-  return response.json();
-};
+import { apiShifts } from "@/requests/requests";
+import { fetcher } from "@/requests/requests";
 
 export default function DateCalendarServerRequest(props) {
   const [selectedDateState, setSelectedDateState] = useState(null);
@@ -68,7 +51,7 @@ export default function DateCalendarServerRequest(props) {
     );
   }
 
-  let { data, mutate, error } = useSWR([`http://127.0.0.1:8000/shifts?month=${calendarMonthState + 1}&year=${calendarYearState}`, props.token, 'GET'], fetcher);
+  let { data, mutate, error } = useSWR({url: `${apiShifts}?month=${calendarMonthState + 1}&year=${calendarYearState}`, accessToken: props.token}, fetcher);
 
   useEffect(() => {
     if (data) {
@@ -87,8 +70,6 @@ export default function DateCalendarServerRequest(props) {
   }
 
   function handleSelectedDate(date) {
-    console.log(date);
-    console.log(date.toDate());
     setSelectedDateState(date);
   }
 
@@ -96,55 +77,34 @@ export default function DateCalendarServerRequest(props) {
 
     if(!selectedDateState) return;
 
-    const url = "http://127.0.0.1:8000/shifts";
-
     const dateObject = new Date(selectedDateState.valueOf() + selectedDateState.utcOffset() * 60 * 1000);
-
-    const data = {
-      start_time: dateObject,
-      end_time: dateObject
-    };
-
-    try {
-      const response = await fetch(url, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${props.token}`
+    
+    await fetcher(
+      {
+        url: apiShifts,
+        accessToken: props.token,
+        data: {
+          start_time: dateObject,
+          end_time: dateObject
         },
-        body: JSON.stringify(data)
-      });
-
-      if (!response.ok) {
-        throw new Error('Error:', response.status);
+        method: 'POST'
       }
-
-      const responseData = await response.json();
-      console.log('Success:', responseData);
-      // Handle the response data here
-
-    } catch (error) {
-      console.error('Error:', error);
-      // Handle errors here
-    }
+    );
     mutate();
     setSelectedDateState(null);
   }
 
 
   async function handleDeleteShift() {
-    console.log(selectedShiftState);
     if(selectedShiftState === undefined ||selectedShiftState === null) return;
 
-    const deleteUrl = `http://127.0.0.1:8000/shifts/${selectedShiftState.id}`;
-    const requestOptions = {
-      method: 'DELETE',
-      headers: {
-        'Authorization': `Bearer ${props.token}`,
-      },
-    };
-
-    const response = await fetch(deleteUrl, requestOptions);
+    await fetcher(
+      {
+        url: `${apiShifts}/${selectedShiftState.id}`,
+        accessToken: props.token,
+        method: 'DELETE',
+      }
+    )
 
     mutate();
     setSelectedDateState(null);
