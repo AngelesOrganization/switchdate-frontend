@@ -1,14 +1,21 @@
 "use client";
 
-import DateCalendarServerRequest2 from "@/components/CustomCalendar2";
+import CustomCalendar from "@/components/CustomCalendar2";
 import { Button } from "@mui/material";
 import { useSession } from "next-auth/react";
 import { useState } from "react";
+import { fetcher } from "@/requests/requests";
+import { apiSwaps } from "@/requests/requests";
+import { useRouter } from "next/navigation";
 
-export default function ProtectedPage({params}) {
+export default function ProtectedPage({ params }) {
   const { data: session, status } = useSession();
-  const [ requesterSelectedDate, setRequesterSelectedDate ] = useState();
-  const [ requestedSelectedDate, setRequestedSelectedDate ] = useState();
+  const [requesterSelectedDate, setRequesterSelectedDate] = useState(null);
+  const [requestedSelectedDate, setRequestedSelectedDate] = useState(null);
+  const [requesterSelectedShift, setRequesterSelectedShift] = useState(null);
+  const [requestedSelectedShift, setRequestedSelectedShift] = useState(null);
+  const [triggerMutate, setTriggerMutate] = useState(0);
+  const router = useRouter();
 
   const loading = status === 'loading';
 
@@ -20,23 +27,43 @@ export default function ProtectedPage({params}) {
       </div>
     );
   }
-  
+
   if (loading) {
     return <div>Loading...</div>;
   }
 
   async function handleSwapRequest() {
-    console.log("requesterSelectedDate: " + JSON.stringify(requesterSelectedDate,null, 4));
-    console.log("requestedSelectedDate: " + JSON.stringify(requestedSelectedDate,null, 4));
-  }
+    if (!requesterSelectedShift || !requestedSelectedShift) {
+      return;
+    }
 
-  function wrapper(shift) {
-    setRequestedSelectedDate(shift);
+    await fetcher(
+      {
+        url: apiSwaps,
+        accessToken: session.accessToken,
+        data: {
+          requester_id: session.user.id,
+          requested_id: params.user_id,
+          requester_shift_id: requesterSelectedShift.id,
+          requested_shift_id: requestedSelectedShift.id
+        },
+        method: 'POST'
+      }
+    )
+    router.push("/panel");
   }
 
   return (
     <div>
-      <DateCalendarServerRequest2 token={session.accessToken} userId={params.user_id} setDate={setRequestedSelectedDate}/>
+      <h1>A quien le pides</h1>
+      <CustomCalendar
+        token={session.accessToken}
+        userId={params.user_id}
+        selectedDateState={requestedSelectedDate}
+        setSelectedDateState={setRequestedSelectedDate}
+        setSelectedShiftState={setRequestedSelectedShift}
+        triggerMutate={triggerMutate}
+      />
       <Button
         variant="contained"
         onClick={handleSwapRequest}
@@ -46,7 +73,15 @@ export default function ProtectedPage({params}) {
       >
         Solicitar Turno
       </Button>
-      <DateCalendarServerRequest2 token={session.accessToken} userId={session.user.id} setDate={setRequesterSelectedDate}/>
+      <h1>Tu calendario</h1>
+      <CustomCalendar
+        token={session.accessToken}
+        userId={session.user.id}
+        selectedDateState={requesterSelectedDate}
+        setSelectedDateState={setRequesterSelectedDate}
+        setSelectedShiftState={setRequesterSelectedShift}
+        triggerMutate={triggerMutate}
+      />
     </div>
   );
 }
