@@ -9,7 +9,7 @@ const SwapListComponent = ({ swaps, mode, handleSwap }) => {
 
     function listItemRenderer() {
         return swaps.map((swap) => (
-            <Card variant="outlined">
+            <Card key={swap.id} variant="outlined" sx={{width: '100%'}}>
                 <ListItem key={swap.id} sx={{ display: 'flex', justifyContent: 'space-between', alignContent: 'center' }}>
                     <ListItemText
                         primary={`${new Date(swap.requester_shift.start_time).toLocaleDateString('en-GB')} ↔️ ${new Date(swap.requested_shift.start_time).toLocaleDateString('en-GB')}`}
@@ -54,7 +54,7 @@ const SwapListComponent = ({ swaps, mode, handleSwap }) => {
 
     return (
         <Box sx={{padding: '0'}}>
-            <List sx={{ width: '100%', maxWidth: 360 }}>
+            <List sx={{ width: '100%' }}>
                 {listItemRenderer()}
             </List>
         </Box>

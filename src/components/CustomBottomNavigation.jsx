@@ -21,7 +21,7 @@ export default function CustomBottomNavigation({children}) {
   }
 
   return (
-    <Box sx={{ pb: 7, display: { xs: 'flex', md: 'none' } }}>
+    <Box sx={{ pb: 7, display: 'flex' }}>
       {children}
             <Paper sx={{ position: 'fixed', bottom: 0, left: 0, right: 0 }} elevation={3}>
               <BottomNavigation

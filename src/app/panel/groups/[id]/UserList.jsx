@@ -11,23 +11,28 @@ import Link from 'next/link';
 import Fab from '@mui/material/Fab';
 import AddIcon from '@mui/icons-material/Add';
 
-export default function UserListComponent(props) {
-    return (
-        <Box sx={{ pb: 7 , mt: 6}}>
-          <List>
-            {
-              props.users.map((user, index) => (
-                <ListItemButton key={user.id} href={`/panel/groups/${props.groupId}/user/${user.id}`}>
-                  <ListItemAvatar>
-                    <Avatar alt="Profile Picture" src={user.name} />
-                  </ListItemAvatar>
-                  <ListItemText primary={user.name} secondary={user.email} />
-                </ListItemButton>
-              ))
-            }
-          </List>
+import { Card } from '@mui/material';
 
-          <Link href={`/panel/groups/${props.groupId}/invite`}>
+export default function UserListComponent(props) {
+  return (
+    <Box>
+      <List>
+        {
+          props.users.map((user, index) => (
+
+            <Card key={user.id} variant="outlined" sx={{mb: "4px"}}>
+              <ListItemButton key={user.id} href={`/panel/groups/${props.groupId}/user/${user.id}`}>
+                <ListItemAvatar>
+                  <Avatar alt="Profile Picture" src={user.name} />
+                </ListItemAvatar>
+                <ListItemText primary={user.first_name} secondary={user.email} />
+              </ListItemButton>
+            </Card>
+          ))
+        }
+      </List>
+
+      <Link href={`/panel/groups/${props.groupId}/invite`}>
         <Fab
           color="primary"
           aria-label="add"
@@ -41,7 +46,6 @@ export default function UserListComponent(props) {
         </Fab>
       </Link>
 
-        </Box>
-      );
-    }
-    
+    </Box>
+  );
+}

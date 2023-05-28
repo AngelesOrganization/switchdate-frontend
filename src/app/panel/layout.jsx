@@ -8,7 +8,7 @@ export default function PanelLayout({ children }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
       <ResponsiveAppBar />
-      <Container maxWidth="sm" style={{ flex: 1, paddingTop: '70px'}}>
+      <Container maxWidth="sm" style={{ flex: 1}}>
         {children}
       </Container>
       <CustomBottomNavigation />

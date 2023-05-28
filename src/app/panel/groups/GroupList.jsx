@@ -10,19 +10,22 @@ import Avatar from '@mui/material/Avatar';
 import Fab from '@mui/material/Fab';
 import AddIcon from '@mui/icons-material/Add';
 import Link from 'next/link';
+import { Card } from '@mui/material';
 
 export default function GroupList(props) {
   return (
-    <Box sx={{ pb: 7}}>
+    <Box sx={{ padding: 0 }}>
       <List>
         {
           props.groups.map((group, index) => (
-            <ListItemButton key={group.id} href={`/panel/groups/${group.id}`}>
-              <ListItemAvatar>
-                <Avatar alt="Profile Picture" src={group.name} />
-              </ListItemAvatar>
-              <ListItemText primary={group.name} secondary={group.updated_at} />
-            </ListItemButton>
+            <Card key={group.id} variant="outlined" sx={{mb: "4px"}}>
+              <ListItemButton key={group.id} href={`/panel/groups/${group.id}`}>
+                <ListItemAvatar>
+                  <Avatar alt="Profile Picture" src={group.name} />
+                </ListItemAvatar>
+                <ListItemText primary={group.name} secondary={group.updated_at} />
+              </ListItemButton>
+            </Card>
           ))
         }
       </List>

@@ -73,6 +73,13 @@ export default function LoginComponent() {
           >
             Login
           </Button>
+          <Button
+            variant="contained"
+            color="secondary"
+            fullWidth 
+            href="/register">
+            Registrarse
+          </Button>
         </form>
       </Container>
     </>
