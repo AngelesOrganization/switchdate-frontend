@@ -13,7 +13,7 @@ import Link from 'next/link';
 
 export default function GroupList(props) {
   return (
-    <Box sx={{ pb: 7 , mt: 6}}>
+    <Box sx={{ pb: 7}}>
       <List>
         {
           props.groups.map((group, index) => (

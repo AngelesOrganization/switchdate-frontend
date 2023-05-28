@@ -7,10 +7,11 @@ import { Container } from '@mui/material';
 export default function PanelLayout({ children }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-    <Container maxWidth="sm" style={{ flex: 1, paddingTop: '16px' }}>
-      {children}
-    </Container>
-    <CustomBottomNavigation />
-  </div>
+      <ResponsiveAppBar />
+      <Container maxWidth="sm" style={{ flex: 1, paddingTop: '70px'}}>
+        {children}
+      </Container>
+      <CustomBottomNavigation />
+    </div>
   )
 }

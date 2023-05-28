@@ -19,7 +19,7 @@ export default NextAuth({
       },
       async authorize(credentials, req) {
         // Add logic here to look up the user from the credentials supplied
-        const res = await fetch("http://127.0.0.1:8000/auth/token", {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_HOST}/auth/token`, {
           method: "POST",
           headers: {
             "Content-Type": "application/x-www-form-urlencoded"
