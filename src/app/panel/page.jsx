@@ -1,6 +1,6 @@
 "use client";
 
-import CustomCalendar from "@/components/CustomCalendar2";
+import CustomCalendar from "@/components/CustomCalendar";
 import { useSession } from "next-auth/react";
 import { useState } from "react";
 import { Button } from "@mui/material";

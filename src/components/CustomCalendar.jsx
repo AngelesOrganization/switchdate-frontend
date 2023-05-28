@@ -1,6 +1,6 @@
 "use client";
 
-import dayjs from "dayjs";
+import { fetcher } from "@/requests/requests";
 import Badge from "@mui/material/Badge";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
@@ -9,19 +9,16 @@ import { DateCalendar } from "@mui/x-date-pickers/DateCalendar";
 import { DayCalendarSkeleton } from "@mui/x-date-pickers/DayCalendarSkeleton";
 import { useEffect, useState } from "react";
 import useSWR from 'swr';
-import { Container, Button } from '@mui/material';
+import { Container } from '@mui/material';
 import { apiShifts } from "@/requests/requests";
-import { fetcher } from "@/requests/requests";
 
-export default function DateCalendarServerRequest(props) {
-  const [selectedDateState, setSelectedDateState] = useState(null);
+export default function CustomCalendar({ userId, token, selectedDateState, setSelectedDateState, setSelectedShiftState, triggerMutate }) {
   const [calendarMonthState, setCalendarMonthState] = useState(new Date().getMonth());
   const [calendarYearState, setCalendarYearState] = useState(new Date().getFullYear());
   const [highlightedDaysState, setHighlightedDaysState] = useState([]);
-  const [selectedShiftState, setSelectedShiftState] = useState(null);
 
-  function ServerDay(props) {
-    const { highlightedDays, calendarMonth, day, ...other } = props;
+  function ServerDay(propss) {
+    const { highlightedDays, calendarMonth, day, ...other } = propss;
 
     const currentRenderingDay = new Date(day).getDate();
     const currentRenderingMonth = new Date(day).getMonth();
@@ -51,7 +48,7 @@ export default function DateCalendarServerRequest(props) {
     );
   }
 
-  let { data, mutate, error } = useSWR({url: `${apiShifts}?month=${calendarMonthState + 1}&year=${calendarYearState}`, accessToken: props.token}, fetcher);
+  let { data, mutate } = useSWR({ url: `${apiShifts}/${userId}?month=${calendarMonthState + 1}&year=${calendarYearState}`, accessToken: token }, fetcher);
 
   useEffect(() => {
     if (data) {
@@ -59,55 +56,20 @@ export default function DateCalendarServerRequest(props) {
     }
   }, [data])
 
-  function handleMonthChange(date) {
-    setCalendarMonthState(new Date(date).getMonth());
-    setCalendarYearState(new Date(date).getFullYear());
-  }
+  useEffect(() => {
+    if (triggerMutate) {
+      mutate();
+    }
+  }, [triggerMutate])
 
-  function handleYearChange(date) {
-    setCalendarMonthState(new Date(date).getMonth());
-    setCalendarYearState(new Date(date).getFullYear());
+  function handleCalendarChange(date) {
+    const dt = new Date(date);
+    setCalendarMonthState(dt.getMonth());
+    setCalendarYearState(dt.getFullYear());
   }
 
   function handleSelectedDate(date) {
     setSelectedDateState(date);
-  }
-
-  async function handleCreateShift() {
-
-    if(!selectedDateState) return;
-
-    const dateObject = new Date(selectedDateState.valueOf() + selectedDateState.utcOffset() * 60 * 1000);
-    
-    await fetcher(
-      {
-        url: apiShifts,
-        accessToken: props.token,
-        data: {
-          start_time: dateObject,
-          end_time: dateObject
-        },
-        method: 'POST'
-      }
-    );
-    mutate();
-    setSelectedDateState(null);
-  }
-
-
-  async function handleDeleteShift() {
-    if(selectedShiftState === undefined ||selectedShiftState === null) return;
-
-    await fetcher(
-      {
-        url: `${apiShifts}/${selectedShiftState.id}`,
-        accessToken: props.token,
-        method: 'DELETE',
-      }
-    )
-
-    mutate();
-    setSelectedDateState(null);
   }
 
   return (
@@ -116,8 +78,8 @@ export default function DateCalendarServerRequest(props) {
         <DateCalendar
           value={selectedDateState}
           onChange={handleSelectedDate}
-          onMonthChange={handleMonthChange}
-          onYearChange={handleYearChange}
+          onMonthChange={handleCalendarChange}
+          onYearChange={handleCalendarChange}
           renderLoading={() => <DayCalendarSkeleton />}
           slots={{
             day: ServerDay
@@ -130,24 +92,6 @@ export default function DateCalendarServerRequest(props) {
           }}
         />
       </LocalizationProvider>
-      <Button
-        variant="contained"
-        color="primary"
-        onClick={handleDeleteShift}
-        sx={{ marginY: '16px' }}
-        fullWidth
-      >
-        Borrar Turno
-      </Button>
-      <Button
-        variant="contained"
-        color="primary"
-        onClick={handleCreateShift}
-        sx={{ marginY: '16px' }}
-        fullWidth
-      >
-        Añadir Turno
-      </Button>
     </Container>
   )
 }

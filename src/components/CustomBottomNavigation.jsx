@@ -30,9 +30,8 @@ export default function CustomBottomNavigation({children}) {
                   goTo(newValue);
                 }}
               >
-                <BottomNavigationAction label="Home" icon={<HomeIcon />} value="/panel"/>
+              <BottomNavigationAction label="Shifts" icon={<AccessTimeIcon />} value="/panel"/>
                 <BottomNavigationAction label="Groups" icon={<GroupsIcon />} value="/panel/groups"/>
-                <BottomNavigationAction label="Shifts" icon={<AccessTimeIcon />} value="/panel/shifts"/>
                 <BottomNavigationAction label="Swaps" icon={<SwapCallsIcon />} value="/panel/swaps"/>
               </BottomNavigation>
             </Paper>
