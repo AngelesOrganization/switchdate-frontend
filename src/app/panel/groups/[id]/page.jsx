@@ -12,7 +12,7 @@ export default function Page({ params }) {
   const loading = status === 'loading';
 
   const { data: users, error } = useSWR(
-    session && {url: `http://127.0.0.1:8000/users/${params.id}`, accessToken: session.accessToken}, 
+    session && {url: `${apiUsers}/${params.id}`, accessToken: session.accessToken}, 
     fetcher
   )
 
