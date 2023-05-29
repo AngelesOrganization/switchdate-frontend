@@ -9,7 +9,7 @@ export default function ProtectedPage() {
   const { data: session, status } = useSession();
 
 
-  const { data: groups, error } = useSWR(
+  let { data: groups, error } = useSWR(
     session ? {url: apiGroups, accessToken: session.accessToken} : null, 
     fetcher
   )
