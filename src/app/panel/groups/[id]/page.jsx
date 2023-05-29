@@ -4,6 +4,7 @@ import { useSession } from "next-auth/react";
 import useSWR from 'swr';
 import UserListComponent from "./UserList";
 import { fetcher } from "@/requests/requests";
+import { apiUsers } from "@/requests/requests";
 
 
 export default function Page({ params }) {
