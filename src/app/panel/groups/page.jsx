@@ -23,6 +23,10 @@ export default function ProtectedPage() {
     );
   }
 
+  if(groups == undefined || groups == null) {
+    groups = [];
+  }
+
   return (
     <div>
       <GroupList groups={groups}/>
