@@ -1,0 +1,7 @@
+version: '3.3'
+services: 
+    main:
+        restart: unless-stopped
+        image: ghcr.io/angelesorganization/switchdate-frontend:main
+        ports:
+            - 8003:3000
